@@ -10,15 +10,9 @@
       <textarea id="content" v-model="format.message"></textarea>
       <label for="font">Font (enter your local font's name)</label>
       <input type="text" v-model="format.font">
-      <div class="select">
+      <div class="range">
         <label for="font-size">Size: </label>
-        <select v-model="format.size" name="font-size" id="fsize">
-        <option value="20px">20px</option>
-        <option value="30px">30px</option>
-        <option value="40px">40px</option>
-        <option value="50px">50px</option>
-        <option value="60px">60px</option>
-      </select>
+        <input v-model="format.size" id="font-size" type="range" min="10" max="200">
       </div>
       <div class="radio" id="radio">
         <label for="radio">Text color: </label>
@@ -66,7 +60,7 @@
         <label for="footer_text">Footer Image</label>
         <div class="image-wrapper">
           <input type="text" v-model="format.footer_img">
-          <img id="cv_image" :src= alt="Footer Image">
+          <!-- <img id="cv_image" :src=resize_img alt="Footer Image"> -->
         </div>
       </div>
     </div>
@@ -80,20 +74,39 @@ export default {
     return {
       format: {
         message: 'Sample text',
-        size: '40px',
+        size: 40,
         line_height: 5,
         bg_color: '#04C1F8',
         text_color: 'white',
         font: "Arial",
-        footer_link: 'fb.com/khongthenoira.cfs',
+        footer_link: 'fb.com/8eebu',
         footer_img: 'https://i.imgur.com/kqrk8r3.png'
-      },
-      resize_img: ''
+      }
     }
   },
   computed: {
-    resize_img: function() {
-      return ''this.format.footer_img
+    resize_img: async function() {
+      return await this.resizeCanvas(this.format.footer_img);
+    }
+  },
+  methods: {
+    resizeCanvas: function(src) {
+      return new Promise(resolve => {
+        let canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+        let img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = src;
+        console.log(img.src);
+        img.onload = function() {
+            // Start resizing
+          canvas.height = 100;
+          canvas.width = 100;
+          ctx.drawImage(this,0,0,this.width, this.height,
+                        0,0,canvas.width,canvas.height);
+          resolve(canvas);
+        };
+      })
     }
   },
   directives: {
@@ -116,9 +129,9 @@ export default {
         const line = lines[index];
         // Insert stuff into canvas
         ctx.fillStyle = data.text_color;
-        ctx.font = data.size + " " + data.font;
+        ctx.font = data.size + "px " + data.font;
         ctx.textAlign = "center";
-        let lineHeight = parseInt(data.size.split("px")[0]) + 5;
+        let lineHeight = parseInt(data.size) + 5;
         console.log(lineHeight);
         ctx.fillText(line, width/2, (height/2) + index*lineHeight);
       }
@@ -128,7 +141,7 @@ export default {
       ctx.textAlign = "center";
       ctx.fillText(data.footer_link, width/2, height - 10);
       let img = document.getElementById("cv_image");
-      ctx.drawImage(img, 50, 50);
+      // ctx.drawImage(img, 0, 0, width , height);
     }
   },
   watch: {
@@ -189,26 +202,34 @@ export default {
 .controller textarea:focus {
   outline: 0;
 }
-.controller select {
-  background-color: rgba(255,255,255,.1);
-  font-size: 15px;
-  height: 35px;
-  color: white;
-  padding: 5px;
-  margin: 10px 0;
-  outline: 0;
-  border: 0;
-  border-radius: 3px;
-  width: 100%;
-  margin-left: 10px;
-}
-.controller select option {
-  background-color: #34495E;
-}
-.controller .select {
+
+.controller .range {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+.controller .range input[type="range"] {
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  height: 10px;
+  margin: 0;
+  border: none;
+  padding: 1px;
+  border-radius: 5px;
+  background: rgba(255,255,255,.1);
+  outline: none; /* no focus outline */
+  margin-left: 20px;
+}
+.controller .range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #529de1), color-stop(100%, #245e8f)); /* android <= 2.2 */
+  background-image: -webkit-linear-gradient(top , #529de1 0, #245e8f 100%); /* older mobile safari and android > 2.2 */;
+  background-image: linear-gradient(to bottom, #529de1 0, #245e8f 100%); /* W3C */
 }
 .controller .footer-image label {
   display: block;
