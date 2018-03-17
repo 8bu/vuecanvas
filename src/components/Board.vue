@@ -60,7 +60,7 @@
         <label for="footer_text">Footer Image</label>
         <div class="image-wrapper">
           <input type="text" v-model="format.footer_img">
-          <!-- <img id="cv_image" :src=resize_img alt="Footer Image"> -->
+          <img id="cv_image" :src=resize_img alt="Footer Image">
         </div>
       </div>
     </div>
@@ -80,13 +80,15 @@ export default {
         text_color: 'white',
         font: "Arial",
         footer_link: 'fb.com/8eebu',
-        footer_img: 'https://i.imgur.com/kqrk8r3.png'
+        footer_img: 'https://i.imgur.com/kqrk8r3.png',
+        footer_size: 100
       }
     }
   },
-  computed: {
+  asyncComputed: {
     resize_img: async function() {
-      return await this.resizeCanvas(this.format.footer_img);
+      var data_url = await this.resizeCanvas(this.format.footer_img);
+      return data_url.toDataURL();
     }
   },
   methods: {
@@ -141,7 +143,8 @@ export default {
       ctx.textAlign = "center";
       ctx.fillText(data.footer_link, width/2, height - 10);
       let img = document.getElementById("cv_image");
-      // ctx.drawImage(img, 0, 0, width , height);
+      console.log(img);
+      ctx.drawImage(img,width - 105,height - 100,100,100);
     }
   },
   watch: {
@@ -241,7 +244,6 @@ export default {
 }
 .controller .footer-image .image-wrapper img {
   max-width: 100px;
-  height: 100px;
 }
 .controller .radio {
   margin-bottom: 20px;
